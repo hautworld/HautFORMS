@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'includes/session.php';
 require_once 'includes/db.php';
 
 $mensagem = "";
@@ -8,33 +8,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email']) && isset($_PO
     $email = trim($_POST['email']);
     $senha = $_POST['senha'];
 
-    $sql = "SELECT id, nome, senha, nivel_acesso_id FROM usuarios WHERE email = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    try {
+        $sql = "SELECT id, nome, senha, nivel_acesso_id FROM usuarios WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($result->num_rows === 1) {
-        $usuario = $result->fetch_assoc();
-        
-        // Verifica se a senha digitada corresponde ao hash no banco de dados
-        if (password_verify($senha, $usuario['senha'])) {
-            $_SESSION['user_id'] = $usuario['id'];
-            $_SESSION['user_nome'] = $usuario['nome'];
-            $_SESSION['nivel_acesso_id'] = $usuario['nivel_acesso_id'];
+        if ($result->num_rows === 1) {
+            $usuario = $result->fetch_assoc();
             
-            // Redireciona para o dashboard correto com base no nível de acesso
-            if ($_SESSION['nivel_acesso_id'] == 1) {
-                header("Location: admin/index.php");
+            // Verifica se a senha digitada corresponde ao hash no banco de dados
+            if (password_verify($senha, $usuario['senha'])) {
+                $_SESSION['user_id'] = $usuario['id'];
+                $_SESSION['user_nome'] = $usuario['nome'];
+                $_SESSION['nivel_acesso_id'] = $usuario['nivel_acesso_id'];
+
+                // Redireciona para o dashboard correto com base no nível de acesso
+                if ($_SESSION['nivel_acesso_id'] == 1) {
+                    header("Location: admin/index.php");
+                } else {
+                    header("Location: member/index.php");
+                }
+                exit();
             } else {
-                header("Location: member/index.php");
+                $mensagem = "E-mail ou senha incorretos.";
             }
-            exit();
         } else {
             $mensagem = "E-mail ou senha incorretos.";
         }
-    } else {
-        $mensagem = "E-mail ou senha incorretos.";
+    } catch (mysqli_sql_exception $e) {
+        // Em um ambiente de produção, você deveria logar o erro em vez de exibi-lo.
+        // error_log($e->getMessage());
+        $mensagem = "Ocorreu um erro no sistema. Por favor, tente novamente mais tarde.";
     }
 }
 ?>

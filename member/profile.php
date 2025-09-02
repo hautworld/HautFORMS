@@ -1,10 +1,10 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 require_once '../includes/db.php';
 require_once '../includes/auth.php';
 
 // Redireciona se não estiver logado
-if (!$_SESSION['logado']) {
+if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
     exit();
 }

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'session.php';
 
 function verifica_login() {
     if (!isset($_SESSION['user_id'])) {
