@@ -1,0 +1,29 @@
+<!-- Impede o acesso direto a arquivos PHP na pasta includes -->
+<!-- Permite acesso ao index.php e remove a extensão .php das URLs -->
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^includes/(.*)$ - [F,L]
+
+# Redireciona para o index.php se a URL não for um arquivo ou diretório existente
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+# Remove a extensão .php da URL
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [L]
+</IfModule>
+
+<!-- Adiciona restrições para diretórios específicos -->
+<FilesMatch ".(php)$">
+Order deny,allow
+Deny from all
+</FilesMatch>
+
+<!-- Permite acesso ao index.php -->
+<Files "index.php">
+Order allow,deny
+Allow from all
+</Files>
