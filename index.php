@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email']) && isset($_PO
     $email = trim($_POST['email']);
     $senha = $_POST['senha'];
 
-    $sql = "SELECT id, nome, senha FROM usuarios WHERE email = ?";
+    $sql = "SELECT id, nome, senha, nivel_acesso_id FROM usuarios WHERE email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -19,10 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email']) && isset($_PO
         
         // Verifica se a senha digitada corresponde ao hash no banco de dados
         if (password_verify($senha, $usuario['senha'])) {
-            $_SESSION['logado'] = true;
             $_SESSION['user_id'] = $usuario['id'];
             $_SESSION['user_nome'] = $usuario['nome'];
-            header("Location: dashboard.php");
+            $_SESSION['nivel_acesso_id'] = $usuario['nivel_acesso_id'];
+            
+            // Redireciona para o dashboard correto com base no nível de acesso
+            if ($_SESSION['nivel_acesso_id'] == 1) {
+                header("Location: admin/index.php");
+            } else {
+                header("Location: member/index.php");
+            }
             exit();
         } else {
             $mensagem = "E-mail ou senha incorretos.";
@@ -37,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email']) && isset($_PO
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Forms Haut</title>
+    <title>Login - Forms Haut 2</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 </head>
 <body>
